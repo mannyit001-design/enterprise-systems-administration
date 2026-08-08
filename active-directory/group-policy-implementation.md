@@ -1,21 +1,25 @@
-﻿# Group Policy Implementation — Sales Department
+# 🔐 Group Policy Implementation — Sales Department
 
-Enterprise Active Directory security baseline plus department-scoped Group
-Policy and least-privilege administrative delegation, built and verified on a
-live Windows Server 2022 domain controller.
+> Enterprise Active Directory security baseline + department-scoped Group Policy + least-privilege administrative delegation
 
-## Objectives
+A hands-on Active Directory security lab built and verified on a **Windows Server 2022 domain controller**. The implementation demonstrates how to separate domain-wide security controls from department-specific configuration, while applying least privilege to delegated administration.
 
-This lab was built to demonstrate the ability to:
+---
 
-- Configure domain-wide password and account lockout policies
-- Design and scope a department-specific Organizational Unit (OU)
-- Create and link Group Policy Objects (GPOs) to that OU without affecting the
-  rest of the domain
-- Delegate administrative privileges narrowly, using the Delegation of Control
-  Wizard, instead of granting broad access
+## 🎯 Objectives
 
-## Environment
+This lab was designed to demonstrate the ability to:
+
+* Configure domain-wide password and account lockout policies
+* Design and organize department-specific Organizational Units (OUs)
+* Create and link security-focused Group Policy Objects (GPOs)
+* Apply policies to a specific department without affecting the entire domain
+* Delegate administrative privileges using the Delegation of Control Wizard
+* Apply the principle of least privilege to Active Directory administration
+
+---
+
+## 🏢 Environment
 
 | Component | Configuration |
 |---|---|
@@ -23,18 +27,20 @@ This lab was built to demonstrate the ability to:
 | Directory Service | Active Directory Domain Services |
 | Policy Management | Group Policy Management Console (GPMC) |
 | Department scoped | Sales |
-| Administrative model | Delegated, least privilege |
+| Administrative Model | Delegated / Least Privilege |
 
-## 1. Domain-wide security policy
+---
 
-Configured on the Default Domain Policy, so these controls apply across the
-entire domain rather than being limited to one department.
+## 🔒 1. Domain-Wide Security Policy
 
-**Password policy** — minimum password length set to 8 characters.
+Security baseline settings were configured through the Default Domain Policy, ensuring the controls apply across the domain rather than being limited to a single department.
+
+**Password Policy**
+* Minimum password length: **8 characters**
 
 ![Minimum password length policy set to 8 characters](images/gpo-password-policy.png)
 
-**Account lockout policy** — deliberate values rather than defaults:
+**Account Lockout Policy**
 
 | Setting | Configuration |
 |---|---|
@@ -43,63 +49,79 @@ entire domain rather than being limited to one department.
 | Reset lockout counter | 10 minutes |
 | Administrator account lockout | Enabled |
 
-**Why the Administrator account lockout matters:** Windows exempts the
-built-in Administrator account from lockout policy by default. Left as-is,
-that leaves the single highest-privilege account in the domain with no
-brute-force protection at all. Enabling it explicitly closes that gap.
-
 ![Account lockout threshold, duration, and administrator lockout settings](images/gpo-lockout-policy.png)
 
-## 2. Sales Organizational Unit
+### 🔎 Security Consideration
 
-Created a dedicated **Sales** OU and moved Sales user accounts into it,
-establishing a policy boundary so department-specific GPOs could be applied
-without affecting users elsewhere in the domain.
+The built-in Administrator account is commonly overlooked when designing account lockout protections — Windows exempts it from lockout by default. Explicitly enabling this control closes that gap and reduces the exposure of the domain's highest-privilege account to repeated authentication attempts.
 
-## 3. Sales-scoped GPOs
+**Security principle:** Protect privileged identities as carefully as — or more carefully than — standard user accounts.
+
+---
+
+## 👥 2. Sales Organizational Unit
+
+A dedicated **Sales OU** was created and Sales user accounts were moved into it, establishing a policy boundary so department-specific GPOs could be applied without affecting users elsewhere in the domain.
+
+---
+
+## 🛡️ 3. Sales Department GPOs
 
 Two GPOs were created and linked specifically to the Sales OU.
 
-**GPO 1 — Restrict Control Panel access.** The "Prohibit access to Control
-Panel and PC settings" policy was enabled. Sales staff don't need to change
-workstation configuration, so removing that access reduces the chance of
-accidental misconfiguration or a user disabling a security-relevant setting.
+**GPO #1 — Restrict Control Panel Access**
+
+> Prohibit access to Control Panel and PC settings
+
+Enabled for Sales users. Sales staff don't need to change workstation configuration, so removing that access reduces the risk of accidental misconfiguration or a user disabling a security-relevant setting.
 
 ![Control Panel access restriction policy enabled](images/gpo-control-panel-restriction.png)
 
-**GPO 2 — Screen saver timeout.** Set to 1,500 seconds (25 minutes). Sales
-terminals are often left unattended between meetings or on the floor — an
-enforced idle timeout limits how long an unattended, logged-in session stays
-exposed.
+**GPO #2 — Screen Saver Timeout**
+
+**1,500 seconds = 25 minutes**
+
+Sales terminals are often left unattended between meetings or on the floor. An enforced idle timeout limits how long an unattended, logged-in session stays exposed.
 
 ![Screen saver timeout policy enabled at 1500 seconds](images/gpo-screensaver-timeout.png)
 
-## 4. Delegated administrative control
+---
 
-Rather than granting a Sales staff member domain-wide administrative rights,
-control over the Sales OU was delegated narrowly using the Delegation of
-Control Wizard. The specific task delegated: **create, delete, and manage
-user accounts** — scoped to the Sales OU only, not the domain.
+## 🔑 4. Delegated Administrative Control
+
+Instead of granting a Sales employee domain-wide administrative rights, control over the Sales OU was delegated narrowly using the **Delegation of Control Wizard**. The specific task delegated: create, delete, and manage user accounts — scoped to the Sales OU only.
 
 ![Delegation of Control Wizard scoped to user account management](images/gpo-delegation-wizard.png)
 
-**The principle:** give someone exactly the access their role requires.
-Domain Admin would have been far more access than necessary; scoping to the
-Sales OU specifically keeps the delegated administrator able to do their job
-without touching anything outside it.
+**Least-Privilege Model**
 
-## Key concepts this reflects
+```text
+❌ Domain Admin
+      ↓
+Too much access
 
-- **Policy scope** — not every control belongs at the domain level; department
-  policy should stay scoped to the department
-- **Least privilege** — administrative delegation limited to the exact OU and
-  task required, not broader "to be safe" access
-- **Defense against credential attacks** — deliberate lockout thresholds
-  rather than accepting defaults
-- **Unattended-session risk** — automatic screen locking as a basic physical
-  security control
+❌ Full domain user administration
+      ↓
+Broader than necessary
 
-## Background
+✅ Sales OU user management
+      ↓
+Required access only
+```
 
-Built as part of IFT 220 (Managing Configuration & Active Directory), B.S.
-Information Technology (Cybersecurity focus), Arizona State University.
+The delegated administrator can perform routine Sales account-management tasks without receiving unnecessary control over the rest of the domain.
+
+---
+
+## 🧠 Key Concepts This Reflects
+
+1. **Policy Scope** — not every control belongs at the domain level; department policy should stay scoped to the department.
+2. **Least Privilege** — administrative delegation limited to the exact OU and task required, not broader "to be safe" access.
+3. **Defense Against Credential Attacks** — deliberate lockout thresholds rather than accepting defaults.
+4. **Unattended-Session Risk** — automatic screen locking as a basic physical security control.
+
+---
+
+## 🎓 Background
+
+Built as part of **IFT 220 — Managing Configuration & Active Directory**, B.S. Information Technology (Cybersecurity focus), Arizona State University.
