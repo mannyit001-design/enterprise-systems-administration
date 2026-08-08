@@ -105,4 +105,4 @@ Every user also received an individual home directory.
 
 ## 🎓 Background
 
-Developed while studying Active Directory management (IFT 220) as part of a B.S. in Information Technology (Cybersecurity focus) at Arizona State University, applied to a small-business AD design scenario.
+Developed while studying Active Directory Management as part of a B.S. in Information Technology, applied to a small-business AD design scenario.
