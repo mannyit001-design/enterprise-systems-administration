@@ -1,83 +1,103 @@
 ﻿# Group Policy Implementation — Sales Department
 
-Domain-wide security policy configuration plus department-scoped Group Policy
-Objects for a Sales OU, including delegated administrative control — built and
-verified on a live Windows Server 2022 domain controller.
+Enterprise Active Directory security baseline plus department-scoped Group
+Policy and least-privilege administrative delegation, built and verified on a
+live Windows Server 2022 domain controller.
 
-## Why this exists
+## Objectives
 
-Group Policy is easy to demo with a single toggle in a tutorial. It's a
-different skill to actually decide what belongs at the domain level versus
-what should be scoped to one department, and to hand off limited administrative
-control without giving away the whole domain. This lab covers both.
+This lab was built to demonstrate the ability to:
 
-## Domain-wide security policy
+- Configure domain-wide password and account lockout policies
+- Design and scope a department-specific Organizational Unit (OU)
+- Create and link Group Policy Objects (GPOs) to that OU without affecting the
+  rest of the domain
+- Delegate administrative privileges narrowly, using the Delegation of Control
+  Wizard, instead of granting broad access
 
-Configured on the Default Domain Policy, affecting every account in the domain:
+## Environment
+
+| Component | Configuration |
+|---|---|
+| Operating System | Windows Server 2022 |
+| Directory Service | Active Directory Domain Services |
+| Policy Management | Group Policy Management Console (GPMC) |
+| Department scoped | Sales |
+| Administrative model | Delegated, least privilege |
+
+## 1. Domain-wide security policy
+
+Configured on the Default Domain Policy, so these controls apply across the
+entire domain rather than being limited to one department.
 
 **Password policy** — minimum password length set to 8 characters.
 
 ![Minimum password length policy set to 8 characters](images/gpo-password-policy.png)
 
-**Account lockout policy** — a specific, deliberate set of values rather than
-defaults:
-- Lockout threshold: 3 invalid logon attempts
-- Lockout duration: 10 minutes
-- Reset lockout counter after: 10 minutes
-- Administrator account lockout: enabled
+**Account lockout policy** — deliberate values rather than defaults:
 
-Enabling lockout on the Administrator account specifically is easy to overlook —
-by default Windows exempts it, which leaves the highest-privilege account as the
-one account with no brute-force protection. Turning it on closes that gap.
+| Setting | Configuration |
+|---|---|
+| Lockout threshold | 3 invalid attempts |
+| Lockout duration | 10 minutes |
+| Reset lockout counter | 10 minutes |
+| Administrator account lockout | Enabled |
+
+**Why the Administrator account lockout matters:** Windows exempts the
+built-in Administrator account from lockout policy by default. Left as-is,
+that leaves the single highest-privilege account in the domain with no
+brute-force protection at all. Enabling it explicitly closes that gap.
 
 ![Account lockout threshold, duration, and administrator lockout settings](images/gpo-lockout-policy.png)
 
-## Sales OU and department-scoped GPOs
+## 2. Sales Organizational Unit
 
-Created a dedicated **Sales** OU and moved all Sales user accounts into it, so
-department-specific policy could be applied without affecting the rest of the
-domain.
+Created a dedicated **Sales** OU and moved Sales user accounts into it,
+establishing a policy boundary so department-specific GPOs could be applied
+without affecting users elsewhere in the domain.
 
-Two GPOs were linked to the Sales OU:
+## 3. Sales-scoped GPOs
 
-**1. Restrict Control Panel access.** The "Prohibit access to Control Panel and
-PC settings" policy was enabled, disabling Control Panel and the Settings app
-entirely for Sales users. For a role that doesn't need to change system
-configuration, this reduces the chance of accidental (or intentional)
-misconfiguration on shared sales floor machines.
+Two GPOs were created and linked specifically to the Sales OU.
+
+**GPO 1 — Restrict Control Panel access.** The "Prohibit access to Control
+Panel and PC settings" policy was enabled. Sales staff don't need to change
+workstation configuration, so removing that access reduces the chance of
+accidental misconfiguration or a user disabling a security-relevant setting.
 
 ![Control Panel access restriction policy enabled](images/gpo-control-panel-restriction.png)
 
-**2. Screen saver timeout.** Enabled with a 1500-second (25-minute) idle
-timeout, so unattended sales terminals lock automatically rather than staying
-open indefinitely.
+**GPO 2 — Screen saver timeout.** Set to 1,500 seconds (25 minutes). Sales
+terminals are often left unattended between meetings or on the floor — an
+enforced idle timeout limits how long an unattended, logged-in session stays
+exposed.
 
 ![Screen saver timeout policy enabled at 1500 seconds](images/gpo-screensaver-timeout.png)
 
-## Delegated administrative control
+## 4. Delegated administrative control
 
-Rather than granting a non-IT staff member domain-wide administrative rights,
-control over the Sales OU specifically was delegated using the Delegation of
-Control Wizard. The task delegated was scoped narrowly: **create, delete, and
-manage user accounts** — enough for day-to-day Sales account management,
-nothing beyond it.
+Rather than granting a Sales staff member domain-wide administrative rights,
+control over the Sales OU was delegated narrowly using the Delegation of
+Control Wizard. The specific task delegated: **create, delete, and manage
+user accounts** — scoped to the Sales OU only, not the domain.
 
 ![Delegation of Control Wizard scoped to user account management](images/gpo-delegation-wizard.png)
 
-This is the same principle as least-privilege access applied to administrative
-delegation: give someone exactly the rights their role requires, not broader
-access "to be safe."
+**The principle:** give someone exactly the access their role requires.
+Domain Admin would have been far more access than necessary; scoping to the
+Sales OU specifically keeps the delegated administrator able to do their job
+without touching anything outside it.
 
-## What this demonstrates
+## Key concepts this reflects
 
-- Distinguishing domain-wide security baseline settings from department-specific
-  policy, and applying each at the right scope
-- Making a deliberate choice most people miss: enabling lockout on the built-in
-  Administrator account
-- Configuring GPOs that solve an actual operational problem (unattended
-  terminals, unnecessary Control Panel access) rather than arbitrary settings
-- Delegating a narrowly scoped administrative task instead of over-provisioning
-  access
+- **Policy scope** — not every control belongs at the domain level; department
+  policy should stay scoped to the department
+- **Least privilege** — administrative delegation limited to the exact OU and
+  task required, not broader "to be safe" access
+- **Defense against credential attacks** — deliberate lockout thresholds
+  rather than accepting defaults
+- **Unattended-session risk** — automatic screen locking as a basic physical
+  security control
 
 ## Background
 
