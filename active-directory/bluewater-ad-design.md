@@ -105,4 +105,4 @@ Every user also received an individual home directory.
 
 ## 🎓 Background
 
-Built as a company-case lab for **IFT 220 — Managing Configuration & Active Directory**, B.S. Information Technology (Cybersecurity focus), Arizona State University.
+Developed while studying Active Directory management (IFT 220) as part of a B.S. in Information Technology (Cybersecurity focus) at Arizona State University, applied to a small-business AD design scenario.
