@@ -1,64 +1,82 @@
-﻿# AD Design Automation with PowerShell — GreenEnergy Case
+# ⚙️ AD Design Automation with PowerShell — GreenEnergy Case
 
-An Active Directory organizational structure — departments, sub-OUs, security
-groups, and a user — built entirely through PowerShell instead of the AD Users
-and Computers GUI, verified on a live Windows Server 2022 domain controller.
+> Scripted Active Directory provisioning: departments, sub-OUs, security groups, and user/group membership — built entirely through PowerShell instead of the AD Users and Computers GUI.
 
-## Why this exists
+A hands-on Active Directory automation lab built and verified on a **Windows Server 2022 domain controller**. Instead of building the organizational structure by hand through the GUI, the entire structure was scripted end-to-end using the `ActiveDirectory` PowerShell module.
 
-Clicking through the GUI to build an OU structure works for one-off changes,
-but it doesn't scale — provisioning the same structure for a second domain, or
-rolling out a template for every new department, means doing the same clicks
-dozens of times. Scripting it means the whole structure is repeatable,
-version-controllable, and auditable as actual code instead of a sequence of
-manual steps nobody wrote down.
+---
 
-## What the script does
+## 🎯 Objectives
 
-Using the `ActiveDirectory` PowerShell module:
+This lab was designed to demonstrate the ability to:
 
-1. **Creates a root OU** — `GreenEnergy_OU` at the domain root
-2. **Creates five department-level OUs** under it — IT, Engineering, R&D,
-   Business, and Legal
-3. **Creates a consistent sub-OU structure inside each department** — Users,
-   Groups, Computers, and Resources — so every department follows the same
-   organizational pattern rather than five inconsistent, ad-hoc layouts
-4. **Creates department-scoped security groups** — `IT-HelpDesk`,
-   `IT-Engineering`, `IT-R&D`, `IT-Business`, `IT-Legal`
-5. **Creates a user** (`MaryHelpdesk`) and adds them to the `IT-HelpDesk`
-   group, demonstrating the full path from OU creation through group
-   membership in one script
+* Script a multi-level OU structure instead of building it manually through the GUI
+* Apply a consistent organizational pattern across multiple departments
+* Create security groups and provision users programmatically
+* Chain OU creation, group creation, and group membership into a single repeatable script
+* Debug distinguished-name path errors when a scripted AD structure doesn't match expectations
+
+---
+
+## 🏢 Environment
+
+| Component | Configuration |
+|---|---|
+| Operating System | Windows Server 2022 |
+| Directory Service | Active Directory Domain Services |
+| Tooling | PowerShell ISE, `ActiveDirectory` module |
+| Company scenario | GreenEnergy |
+| Departments scripted | IT, Engineering, R&D, Business, Legal |
+
+---
+
+## 🧱 1. Scripted OU Structure
+
+The script builds the structure top-down:
+
+1. **Root OU** — `GreenEnergy_OU` at the domain root
+2. **Department-level OUs** — IT, Engineering, R&D, Business, Legal
+3. **Consistent sub-OU pattern inside every department** — Users, Groups, Computers, Resources, so all five departments follow the same layout instead of five inconsistent, ad-hoc structures
 
 ![PowerShell script creating the GreenEnergy OU structure, groups, and user](images/greenenergy-powershell-script.png)
 
-## Verified result
+---
 
-The resulting structure, confirmed in Active Directory Users and Computers —
-`GreenEnergy_OU` at the root with all five department OUs (Business,
-Engineering, IT, Legal, RandD) created exactly as scripted:
+## 👥 2. Security Groups and User Provisioning
+
+The script also creates department-scoped security groups (`IT-HelpDesk`, `IT-Engineering`, `IT-R&D`, `IT-Business`, `IT-Legal`), creates a user (`MaryHelpdesk`), and adds that user directly to the `IT-HelpDesk` group — covering the full path from OU creation through group membership in one pass.
+
+---
+
+## ✅ 3. Verified Result
+
+Confirmed directly in Active Directory Users and Computers: `GreenEnergy_OU` at the root, with all five department OUs (Business, Engineering, IT, Legal, RandD) created exactly as scripted.
 
 ![GreenEnergy_OU structure verified in Active Directory Users and Computers](images/greenenergy-ou-result.png)
 
-## A real challenge working through this
+---
 
-Individually scripting each OU, group, and user is straightforward, but
-getting the **paths right** was not. Every `New-ADOrganizationalUnit` and
-`New-ADGroup` call depends on an exact, correctly nested distinguished-name
-path (e.g., `"ou=Users,ou=IT,ou=GreenEnergy_OU,dc=eemile,dc=local"`), and a
-single wrong OU name or misordered path segment fails silently or creates the
-object in the wrong location. Verifying every department's path manually
-against the actual domain structure, rather than assuming the pattern held,
-was the actual work here — the scripting syntax itself was the easy part.
+## 🔎 A Real Challenge Working Through This
 
-## What this demonstrates
+Scripting each individual OU, group, and user was straightforward. **Getting the paths right was not.** Every `New-ADOrganizationalUnit` and `New-ADGroup` call depends on an exact, correctly nested distinguished-name path — for example:
 
-- Automating AD provisioning instead of relying on repetitive manual GUI work
-- Understanding AD distinguished-name path structure well enough to debug it
-  when a script targets the wrong location
-- Extending a scripted structure end-to-end — OU creation, security groups,
-  and actual user/group membership in one pass
+```text
+"ou=Users,ou=IT,ou=GreenEnergy_OU,dc=eemile,dc=local"
+```
 
-## Background
+A single wrong OU name or misordered path segment fails silently or creates the object in the wrong location. Verifying every department's path manually against the actual domain structure — rather than assuming the pattern held across all five departments — was the real work here. The scripting syntax itself was the easy part.
 
-Built as part of IFT 220 (Managing Configuration & Active Directory), B.S.
-Information Technology (Cybersecurity focus), Arizona State University.
+---
+
+## 🧠 Key Concepts This Reflects
+
+1. **Automation over repetition** — scripting a structure that would otherwise require dozens of repetitive manual GUI actions.
+2. **Consistency at scale** — the same Users/Groups/Computers/Resources pattern applied identically across five departments.
+3. **Path-level AD literacy** — understanding distinguished-name structure well enough to debug it when a script targets the wrong location.
+4. **End-to-end provisioning** — OU creation, group creation, and actual group membership chained into one script rather than three disconnected steps.
+
+---
+
+## 🎓 Background
+
+Developed while studying Active Directory management (IFT 220) as part of a B.S. in Information Technology (Cybersecurity focus) at Arizona State University, applied to a scripted multi-department AD provisioning scenario.
