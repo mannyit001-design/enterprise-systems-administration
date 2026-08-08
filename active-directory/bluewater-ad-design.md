@@ -1,79 +1,108 @@
-﻿# Active Directory Design — BlueWater Company Case
+# 🏢 Active Directory Design — BlueWater Company Case
 
-A small-business Active Directory environment designed and implemented from a
-company case study: organizational unit structure, naming conventions, security
-groups, shared directories, printer permissions, and logon restrictions — built
-and verified on a live Windows Server 2022 domain controller.
+> Small-business Active Directory implementation: OU design, naming conventions, security groups, shared directories, and role-based access — built and verified on a live Windows Server 2022 domain controller.
 
-## Why this exists
+A hands-on Active Directory design lab based on a company case study, built and verified on a **Windows Server 2022 domain controller**. The implementation translates a small-business scenario into a working AD structure with real naming decisions, access scoping, and edge cases resolved along the way.
 
-Most AD tutorials show you how to click through the wizards. They don't force you
-to make actual naming and structure decisions for a real organization with
-real edge cases (duplicate names, department-specific access needs, shared
-resources). This project started as a coursework case study but the decisions
-below reflect real design tradeoffs, not just "how to create a user in AD."
+---
 
-## The scenario
+## 🎯 Objectives
 
-BlueWater is a small company needing a single, centrally-managed AD environment
-covering sales, service technicians, accounting, and store management — with
-shared file access, a shared printer, and department-appropriate login
-restrictions.
+This lab was designed to demonstrate the ability to:
 
-## Design decisions
+* Design an Organizational Unit (OU) structure appropriate to a company's actual size
+* Establish and apply a consistent account naming convention, including a fallback for collisions
+* Create security groups aligned to functional business roles, not arbitrary categories
+* Configure shared directories with permissions scoped to the correct audience
+* Apply logon-hour restrictions and delegated rights based on real operational need
 
-**Single OU for a small company.** Rather than a deep OU hierarchy, everything
-lives under one `BlueWater_OU`. For an organization this size, a single OU keeps
-administration simple without sacrificing the ability to apply group policy or
-delegate permissions later if the company grows.
+---
+
+## 🏢 Environment
+
+| Component | Configuration |
+|---|---|
+| Operating System | Windows Server 2022 |
+| Directory Service | Active Directory Domain Services |
+| Management Tool | Active Directory Users and Computers |
+| Company scenario | BlueWater (small business) |
+| OU Model | Single flat OU |
+
+---
+
+## 🗂️ 1. Organizational Unit Design
+
+Rather than a deep OU hierarchy, everything lives under one `BlueWater_OU`. For a company this size, a single OU keeps administration simple without sacrificing the ability to apply group policy or delegate permissions later if the company grows.
 
 ![BlueWater OU structure in Active Directory Users and Computers](images/bluewater-ou-structure.png)
 
-**Naming convention: first initial + last name, with a fallback for collisions.**
-Accounts follow `flastname` (e.g., Steve Brasil -> `sbrasil`). Two employees with
-colliding names — Deb Dugeon and Dave Dugeon — would both resolve to `ddugeon`
-under that pattern. The fix: append a numeric suffix to the second account
-(`ddugeon`, `ddugeon1`). This is a real naming-convention edge case that a lot of
-first-pass AD designs miss until it actually happens.
+---
 
-**Security groups named by function, with a consistent `_SG` suffix.**
-`Sales_SG`, `Service_Tech_SG`, `Accountant_SG`, `Store_Manager_SG`, and others —
-the suffix makes it immediately clear in any permissions dialog which entries are
-access-control groups versus individual accounts.
+## 🏷️ 2. Naming Convention
+
+**Pattern:** first initial + last name (e.g., Steve Brasil → `sbrasil`)
+
+### 🔎 Edge Case Encountered
+
+Two employees — **Deb Dugeon** and **Dave Dugeon** — both resolve to `ddugeon` under that pattern. Resolved by appending a numeric suffix to the second account: `ddugeon`, `ddugeon1`.
+
+**Why this matters:** a naming convention that hasn't been tested against a collision isn't actually a convention yet — it's a guess. Catching this before it became a real support ticket is the actual point of the exercise.
+
+---
+
+## 👥 3. Security Groups
+
+Groups named by function, with a consistent `_SG` suffix so any permissions dialog immediately shows which entries are access-control groups versus individual accounts:
+
+| Group | Purpose |
+|---|---|
+| `Sales_SG` | Sales staff |
+| `Service_Tech_SG` | Service technicians |
+| `Accountant_SG` | Accounting staff |
+| `Store_Manager_SG` | Store managers |
+| `All_Printers_SG` | Printer access |
+| `Owners_SG` | Ownership-level access |
+| `Receptionist_SG` | Front-desk staff |
 
 ![Security groups and user accounts in the BlueWater_OU](images/bluewater-security-groups-users.png)
 
-**Shared directories named by audience, with permissions matched to that audience.**
-`Public_SHR` is accessible company-wide; `Service_Techs_SHR` and `Accountants_SHR`
-are scoped to their respective groups with Read/Write, while broader groups get
-Read-only where appropriate. Every user also received a home directory.
+---
+
+## 📁 4. Shared Directories
+
+Directories named by audience, with permissions matched to that audience:
+
+| Directory | Audience | Access |
+|---|---|---|
+| `Public_SHR` | All employees | Read/Write |
+| `Service_Techs_SHR` | Service technicians | Read/Write |
+| `Accountants_SHR` | Accounting staff | Read/Write |
+
+Every user also received an individual home directory.
 
 ![Per-user home directories under BlueWater_SHR](images/bluewater-home-directories.png)
 
-**Logon time restrictions scoped by role.** The Sales security group has logon
-hours restricted to 9 AM-9 PM, matching actual working hours — a small detail,
-but one that reflects real operational security thinking rather than leaving
-every account able to log in 24/7 by default.
+---
 
-**Delegated Domain Admin rights only where actually needed.** Rather than
-over-provisioning access, specific individuals (e.g., `sbrasil`, `rjefferson`)
-were added to Domain Admins based on an actual need for that level of access,
-and Print Operator rights were scoped to a small set of users responsible for
-managing the shared printer — not granted broadly.
+## 🔑 5. Role-Based Restrictions and Delegation
 
-## What this demonstrates
+**Logon-hour restrictions** — the Sales security group is restricted to 9 AM–9 PM logon hours, matching actual working hours instead of allowing 24/7 access by default.
 
-- Translating a business scenario into an AD structure, not just following a
-  checklist
-- Recognizing and resolving a real naming collision before it becomes a support
-  ticket
-- Scoping permissions and logon restrictions to actual roles instead of applying
-  one policy to everyone
-- Working directly in Active Directory Users and Computers on a live Windows
-  Server 2022 domain controller
+**Scoped Domain Admin delegation** — specific individuals (`sbrasil`, `rjefferson`) were added to Domain Admins based on an actual need for that access level, not by default.
 
-## Background
+**Scoped Print Operator rights** — granted only to the small set of users responsible for managing the shared printer, not broadly.
 
-Built as a company-case lab for IFT 220 (Managing Configuration & Active
-Directory) as part of a B.S. in Information Technology (Cybersecurity focus)
-at Arizona State University.
+---
+
+## 🧠 Key Concepts This Reflects
+
+1. **Right-sized design** — a single OU is the correct choice for this company's size; more structure would add complexity without benefit.
+2. **Naming convention resilience** — a convention is only as good as its handling of real collisions.
+3. **Access scoped to audience** — shared directory and printer permissions matched to who actually needs them.
+4. **Time-based access control** — logon-hour restrictions applied where they reflect real working patterns.
+
+---
+
+## 🎓 Background
+
+Built as a company-case lab for **IFT 220 — Managing Configuration & Active Directory**, B.S. Information Technology (Cybersecurity focus), Arizona State University.
