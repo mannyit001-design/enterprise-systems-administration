@@ -1,6 +1,13 @@
 # 🖥️ Enterprise Systems Administration
 
-> Active Directory design and SCCM (Microsoft Configuration Manager) endpoint management — built from coursework and structured to reflect real enterprise systems administration work.
+> Hands-on Windows infrastructure portfolio focused on Active Directory, Group Policy, PowerShell automation, and Microsoft Configuration Manager (SCCM).
+
+
+This repository showcases practical experience designing, securing, automating, and managing Windows enterprise environments.
+
+The work covers the full administration lifecycle. From building an organized Active Directory environment and enforcing security policies to automating configuration, managing endpoints, deploying software, and maintaining systems through centralized patch management.
+
+Although these projects were originally completed as part of university coursework, each implementation is documented and presented around real-world enterprise administration practices, security principles, automation, and operational workflows.
 
 ---
 
