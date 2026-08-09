@@ -24,7 +24,7 @@ Although these projects were originally completed as part of university coursewo
 - **[Patch Management — Automatic Deployment Rules](sccm-endpoint-management/patch-management.md)** — automated Windows Server patching, update filtering, deployment packages, and maintenance windows.
 - **[Software Metering Rule](sccm-endpoint-management/software-metering.md)** — tracking real-world application usage across a device collection.
 - **[CMPivot — Live Device Queries](sccm-endpoint-management/cmpivot-live-queries.md)** — real-time device querying for security auditing and troubleshooting.
-- **[OS Deployment — Bootable Task Sequence Media](sccm-endpoint-management/os-deployment-bootable-media.md)** — certificate-secured bootable media for offline OS deployment, built as part of a 4-person team project.
+- **[OS Deployment — Bootable Task Sequence Media](sccm-endpoint-management/os-deployment-bootable-media.md)** — certificate-secured bootable media for offline Windows OS deployment, including Task Sequence configuration and deployment-media troubleshooting.
 
 ---
 
